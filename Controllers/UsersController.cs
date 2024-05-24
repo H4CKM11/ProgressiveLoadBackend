@@ -2,7 +2,9 @@
 using ProgressiveLoadBackend.DTOs;
 using ProgressiveLoadBackend.Models;
 using ProgressiveLoadBackend.Repositories.Users;
+using ProgressiveLoadBackend.Services.Cookies;
 using ProgressiveLoadBackend.Services.HashingService;
+using ProgressiveLoadBackend.Services.Users;
 
 namespace ProgressiveLoadBackend.Controllers
 {
@@ -10,13 +12,15 @@ namespace ProgressiveLoadBackend.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IUsersRepository _usersRepository;
         private readonly IHashingService _hashingService;
+        private readonly ICookieService _cookieService;
+        private readonly IUsersService _usersService;
 
-        public UsersController(IUsersRepository usersRepository, IHashingService hashingService)
+        public UsersController(IHashingService hashingService, ICookieService cookieService, IUsersService usersService)
         {
-            _usersRepository = usersRepository;
             _hashingService = hashingService;
+            _cookieService = cookieService;
+            _usersService = usersService;
         }
 
         [HttpPost("register")]
@@ -36,11 +40,31 @@ namespace ProgressiveLoadBackend.Controllers
                 passwordHash = _hashingService.hashPassword(registerDTO.Password)
             };
 
-            await _usersRepository.addUser(user);
+            try{
+                await _usersService.addUserToRepository(user);
+                Sessions session = await _usersService.generateSession(user);
 
-            Guid sessionID = await _usersRepository.generateSessionID(user);
+                var sessionCookie = _cookieService.createSessionCookie(session);
+                Response.Cookies.Append("SessionID", session.sessionID.ToString(), sessionCookie);
 
-            return Ok(sessionID);
+                return Ok("Registered User Success");
+            } catch(Exception ex)
+            {
+                Console.WriteLine(ex + " Error adding user");
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login(LoginDTO loginDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+
+            return Ok();
         }
     }
 }

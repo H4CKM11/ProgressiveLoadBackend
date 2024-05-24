@@ -17,6 +17,8 @@ namespace ProgressiveLoadBackend.Repositories.Users
         {
 
             try {
+
+                //Adding new user into database
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
             }
@@ -27,23 +29,13 @@ namespace ProgressiveLoadBackend.Repositories.Users
 
         }
 
-        public async Task<Guid> generateSessionID(Models.Users user)
+        public async Task addSession(Models.Sessions session)
         {
             try {
-                Models.Sessions session = new Models.Sessions
-                {
-                    sessionID = Guid.NewGuid(),
-                    userID = user.userID,
-                    createdAt = DateTime.Now,
-                    expiresAt = DateTime.Now.AddDays(30),
-                    user = user
-                };
 
+                //Adding new Session into Database
                 _context.Sessions.Add(session);
                 await _context.SaveChangesAsync();
-
-                return session.sessionID;
-
             }
             catch (Exception e)
             {
@@ -52,5 +44,16 @@ namespace ProgressiveLoadBackend.Repositories.Users
             }
         }
 
+        public async Task login(LoginDTO login)
+        {
+            try {
+                
+            } catch (Exception e)
+            {
+                Console.WriteLine(e + " Error Logining in");
+                throw;
+
+            }
+        }
     }
 }

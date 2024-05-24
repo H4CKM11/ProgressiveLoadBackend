@@ -1,17 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using ProgressiveLoadBackend.Data;
 using ProgressiveLoadBackend.Repositories.Users;
+using ProgressiveLoadBackend.Services.Cookies;
 using ProgressiveLoadBackend.Services.HashingService;
+using ProgressiveLoadBackend.Services.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Adding Services
 builder.Services.AddSingleton<IHashingService, HashingService>();
+builder.Services.AddSingleton<ICookieService, CookieService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
+
+// Adding Repositories
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
