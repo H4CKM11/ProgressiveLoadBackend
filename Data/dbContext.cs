@@ -9,6 +9,7 @@ namespace ProgressiveLoadBackend.Data
         }
 
         public DbSet<Models.Users> Users { get; set; }
+        public DbSet<Models.Sessions> Sessions { get; set; }
     }
  
 }

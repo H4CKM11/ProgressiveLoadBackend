@@ -1,5 +1,6 @@
-﻿
-using ProgressiveLoadBackend.Data;
+﻿using ProgressiveLoadBackend.Data;
+using ProgressiveLoadBackend.DTOs;
+using ProgressiveLoadBackend.Models;
 
 namespace ProgressiveLoadBackend.Repositories.Users
 {
@@ -14,13 +15,42 @@ namespace ProgressiveLoadBackend.Repositories.Users
 
         public async Task addUser(Models.Users user)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+
+            try {
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e + " Error adding User");
+            }
+
         }
 
-        public Task generateSessionID(Models.Users user)
+        public async Task<Guid> generateSessionID(Models.Users user)
         {
-            throw new NotImplementedException();
+            try {
+                Models.Sessions session = new Models.Sessions
+                {
+                    sessionID = Guid.NewGuid(),
+                    userID = user.userID,
+                    createdAt = DateTime.Now,
+                    expiresAt = DateTime.Now.AddDays(30),
+                    user = user
+                };
+
+                _context.Sessions.Add(session);
+                await _context.SaveChangesAsync();
+
+                return session.sessionID;
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e + " Error Generating Session");
+                throw;
+            }
         }
+
     }
 }

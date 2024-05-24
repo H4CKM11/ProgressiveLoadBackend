@@ -2,20 +2,25 @@
 using ProgressiveLoadBackend.DTOs;
 using ProgressiveLoadBackend.Models;
 using ProgressiveLoadBackend.Repositories.Users;
+using ProgressiveLoadBackend.Services.HashingService;
 
 namespace ProgressiveLoadBackend.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly IUsersRepository _usersRepository;
+        private readonly IHashingService _hashingService;
 
-        UsersController(IUsersRepository usersRepository)
+        public UsersController(IUsersRepository usersRepository, IHashingService hashingService)
         {
             _usersRepository = usersRepository;
+            _hashingService = hashingService;
         }
 
         [HttpPost("register")]
-        public IActionResult Register(RegisterDTO registerDTO)
+        public async Task<IActionResult> Register(RegisterDTO registerDTO)
         {
             if(!ModelState.IsValid)
             {
@@ -28,14 +33,14 @@ namespace ProgressiveLoadBackend.Controllers
                 firstName = registerDTO.firstName,
                 lastName = registerDTO.lastName,
                 email = registerDTO.Email,
-                //Change this to passwordHash
-                passwordHash = registerDTO.Password
+                passwordHash = _hashingService.hashPassword(registerDTO.Password)
             };
 
-            _usersRepository.addUser(user);
-            _usersRepository.generateSessionID(user);
+            await _usersRepository.addUser(user);
 
-            return Ok(registerDTO);
+            Guid sessionID = await _usersRepository.generateSessionID(user);
+
+            return Ok(sessionID);
         }
     }
 }

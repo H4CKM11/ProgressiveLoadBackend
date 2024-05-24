@@ -3,6 +3,6 @@
     public interface IUsersRepository
     {
         Task addUser(Models.Users user);
-        Task generateSessionID(Models.Users user);
+        Task<Guid> generateSessionID(Models.Users user);
     }
 }
