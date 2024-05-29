@@ -1,7 +1,8 @@
-﻿using ProgressiveLoadBackend.Data;
-using ProgressiveLoadBackend.DTOs;
-using ProgressiveLoadBackend.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using ProgressiveLoadBackend.Data;
 
+
+//Lower Level Of User Repository
 namespace ProgressiveLoadBackend.Repositories.Users
 {
     public class UsersRepository : IUsersRepository
@@ -15,45 +16,19 @@ namespace ProgressiveLoadBackend.Repositories.Users
 
         public async Task addUser(Models.Users user)
         {
-
-            try {
-
-                //Adding new user into database
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e + " Error adding User");
-            }
-
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
         }
 
         public async Task addSession(Models.Sessions session)
         {
-            try {
-
-                //Adding new Session into Database
                 _context.Sessions.Add(session);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e + " Error Generating Session");
-                throw;
-            }
+                await _context.SaveChangesAsync();   
         }
 
-        public async Task login(LoginDTO login)
+        public Task<Models.Users?> getUserByEmail(string email)
         {
-            try {
-                
-            } catch (Exception e)
-            {
-                Console.WriteLine(e + " Error Logining in");
-                throw;
-
-            }
+            return _context.Users.FirstOrDefaultAsync(u => u.email == email);
         }
     }
 }

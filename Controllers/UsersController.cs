@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProgressiveLoadBackend.DTOs;
 using ProgressiveLoadBackend.Models;
-using ProgressiveLoadBackend.Repositories.Users;
 using ProgressiveLoadBackend.Services.Cookies;
 using ProgressiveLoadBackend.Services.HashingService;
 using ProgressiveLoadBackend.Services.Users;
@@ -31,17 +30,8 @@ namespace ProgressiveLoadBackend.Controllers
                 return BadRequest(ModelState);
             }
 
-            Users user = new Users
-            {
-                userID = Guid.NewGuid(),
-                firstName = registerDTO.firstName,
-                lastName = registerDTO.lastName,
-                email = registerDTO.Email,
-                passwordHash = _hashingService.hashPassword(registerDTO.Password)
-            };
-
             try{
-                await _usersService.addUserToRepository(user);
+                Models.Users user = await _usersService.addUserToRepository(registerDTO);
                 Sessions session = await _usersService.generateSession(user);
 
                 var sessionCookie = _cookieService.createSessionCookie(session);
@@ -56,15 +46,36 @@ namespace ProgressiveLoadBackend.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login(LoginDTO loginDTO)
+        public async Task<IActionResult> Login(LoginDTO loginDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            try{
+                loginResult loginResult = await _usersService.login(loginDTO);
+                Models.Users? user = loginResult.user;
 
-            return Ok();
+                if(user == null)
+                {
+                    return BadRequest(loginResult.message);
+                } else if (loginResult.success == false)
+                {
+                    return BadRequest(loginResult.message);
+                }
+
+                Sessions session = await _usersService.generateSession(user);
+                var sessionCookie = _cookieService.createSessionCookie(session);
+                Response.Cookies.Append("SessionID", session.sessionID.ToString(), sessionCookie);
+
+                return Ok("Login Success");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex + " Error Loggin In");
+                return BadRequest(ex);
+            }
         }
     }
 }
