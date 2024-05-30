@@ -90,6 +90,36 @@ namespace ProgressiveLoadBackend.Services.Users
                 throw;
             }
         }
+
+        public async Task<verificationResult> verifySessionID(string sessionID)
+        {
+            var session = await _usersRepository.getSession(sessionID);
+
+            if(session == null)
+            {
+                return new verificationResult { success = false, message = "Session Not Found" };
+            }
+
+
+            if (session.expiresAt < DateTime.Now)
+            {
+                await _usersRepository.removeSession(session);
+                return new verificationResult { success = false, message = "Session Expired" };
+            }
+            else
+            {
+                var user = await _usersRepository.getUserByUserID(session.userID);
+                if (user == null)
+                {
+                   return new verificationResult { success = false, message = "User Not Found" };
+
+                }
+
+                return new verificationResult { success = true, message = "Session Valid",
+                                                firstName = user.firstName, lastName = user.lastName };
+            }
+
+        }
     }
 
     public class loginResult
@@ -97,5 +127,13 @@ namespace ProgressiveLoadBackend.Services.Users
         public bool success { get; set; }
         public string? message { get; set; }
         public Models.Users? user { get; set; }
+    }
+
+    public class verificationResult
+    {
+        public bool success { get; set; }
+        public string? message { get; set; }
+        public string? firstName { get; set; }
+        public string? lastName { get; set; }
     }
 }

@@ -25,10 +25,25 @@ namespace ProgressiveLoadBackend.Repositories.Users
                 _context.Sessions.Add(session);
                 await _context.SaveChangesAsync();   
         }
+        public async Task removeSession(Models.Sessions session)
+        {
+            _context.Sessions.Remove(session);
+            await _context.SaveChangesAsync();
+        }
 
         public Task<Models.Users?> getUserByEmail(string email)
         {
             return _context.Users.FirstOrDefaultAsync(u => u.email == email);
+        }
+
+        public Task<Models.Users?> getUserByUserID(Guid userID)
+        {
+            return _context.Users.FirstOrDefaultAsync(u => u.userID == userID);
+        }
+
+        public Task<Models.Sessions?> getSession(string sessionID)
+        {            
+            return _context.Sessions.FirstOrDefaultAsync(s => s.sessionID.ToString() == sessionID);
         }
     }
 }

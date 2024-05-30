@@ -4,6 +4,7 @@ using ProgressiveLoadBackend.Models;
 using ProgressiveLoadBackend.Services.Cookies;
 using ProgressiveLoadBackend.Services.HashingService;
 using ProgressiveLoadBackend.Services.Users;
+using System.Net;
 
 namespace ProgressiveLoadBackend.Controllers
 {
@@ -74,6 +75,28 @@ namespace ProgressiveLoadBackend.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex + " Error Loggin In");
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost("verifySessionID")]
+        public async Task<IActionResult> verifySessionID()
+        {
+
+            var cookie = Request.Cookies["SessionID"];
+            if (cookie == null)
+            {
+                return BadRequest("Cookie Doesnt Exist");
+            }
+
+            try
+            {
+                verificationResult result = await _usersService.verifySessionID(cookie);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex + " Error Verifying Session ID");
                 return BadRequest(ex);
             }
         }
